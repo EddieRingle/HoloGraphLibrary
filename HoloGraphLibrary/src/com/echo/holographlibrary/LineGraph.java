@@ -31,6 +31,8 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 	private int lineToFill = -1;
 	private int indexSelected = -1;
 	private OnPointClickedListener listener;
+	private Bitmap fullImage;
+	private boolean shouldUpdate = false;
 	
 	public LineGraph(Context context){
 		super(context);
@@ -138,28 +140,99 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {}
 	
-	public void onDraw(Canvas canvas) {
-		Paint paint = new Paint();
-		Path path = new Path();
-		float bottomPadding = 2, topPadding = 10;
-		float sidePadding = 10;
-		float usableHeight = getHeight() - bottomPadding - topPadding;
-		float usableWidth = getWidth() - 2*sidePadding;
-		
-		int lineCount = 0;
-		for (Line line : lines){
-			int count = 0;
-			float firstXPixels = 0, lastXPixels = 0, newYPixels = 0;
-			float lastYPixels = 0, newXPixels = 0;
-			float maxY = getMaxY();
-			float minY = getMinY();
-			float maxX = getMaxX();
-			float minX = getMinX();
+	public void onDraw(Canvas ca) {
+		if (fullImage == null || shouldUpdate) {
+			fullImage = Bitmap.createBitmap(getWidth(), getHeight(), Config.ARGB_8888);
+			Canvas canvas = new Canvas(fullImage);
+			Paint paint = new Paint();
+			Path path = new Path();
+			float bottomPadding = 2, topPadding = 10;
+			float sidePadding = 10;
+			float usableHeight = getHeight() - bottomPadding - topPadding;
+			float usableWidth = getWidth() - 2*sidePadding;
 			
-			if (lineCount == lineToFill){
+			int lineCount = 0;
+			for (Line line : lines){
+				int count = 0;
+				float firstXPixels = 0, lastXPixels = 0, newYPixels = 0;
+				float lastYPixels = 0, newXPixels = 0;
+				float maxY = getMaxY();
+				float minY = getMinY();
+				float maxX = getMaxX();
+				float minX = getMinX();
 				
-				Bitmap b = Bitmap.createBitmap(getWidth(), getHeight(), Config.ARGB_8888);
-				Canvas c = new Canvas(b);
+				if (lineCount == lineToFill){
+					
+					Bitmap b = Bitmap.createBitmap(getWidth(), getHeight(), Config.ARGB_8888);
+					Canvas c = new Canvas(b);
+					
+					for (LinePoint p : line.getPoints()){
+						float yPercent = (p.getY()-minY)/(maxY - minY);
+						float xPercent = (p.getX()-minX)/(maxX - minX);
+						if (count == 0){
+							lastXPixels = sidePadding + (xPercent*usableWidth);
+							lastYPixels = getHeight() - bottomPadding - (usableHeight*yPercent);
+							firstXPixels = lastXPixels;
+							path.moveTo(lastXPixels, lastYPixels);
+						} else {
+							newXPixels = sidePadding + (xPercent*usableWidth);
+							newYPixels = getHeight() - bottomPadding - (usableHeight*yPercent);
+							path.lineTo(newXPixels, newYPixels);
+							lastXPixels = newXPixels;
+							lastYPixels = newYPixels;
+						}
+						count++;
+					}
+					path.lineTo(newXPixels, getHeight()-bottomPadding);
+					path.lineTo(getWidth(), getHeight()-bottomPadding);
+					path.lineTo(getWidth(), 0);
+					path.lineTo(0, 0);
+					path.lineTo(0, getHeight()-bottomPadding);
+					path.lineTo(firstXPixels, getHeight()-bottomPadding);
+					path.close();
+						
+					paint.setColor(Color.BLACK);
+					paint.setAlpha(30);
+					paint.setStrokeWidth(2);
+					for (int i = 10; i-getWidth() < getHeight(); i = i+20){
+						c.drawLine(i, getHeight()-bottomPadding, 0, getHeight()-bottomPadding-i, paint);
+					}
+					paint.setColor(Color.RED);
+					paint.setAlpha(255);
+					c.drawPath(path, paint);
+	
+					Paint pa = new Paint();
+					pa.setColor(Color.RED); // ARGB for the color, in this case red
+					int removeColor = pa.getColor(); // store this color's int for later use
+					pa.setAlpha(0);
+					pa.setXfermode(new AvoidXfermode(removeColor, 0, AvoidXfermode.Mode.TARGET));
+					// draw transparent on the "brown" pixels
+					c.drawPaint(pa);
+					
+					canvas.drawBitmap(b, 0, 0, null);
+				}
+				
+				lineCount++;
+			}
+			
+			paint.setColor(Color.BLACK);
+			paint.setAlpha(50);
+			paint.setAntiAlias(true);
+			canvas.drawLine(sidePadding, getHeight() - bottomPadding, getWidth()-sidePadding, getHeight()-bottomPadding, paint);
+			paint.setAlpha(255);
+			
+			
+			for (Line line : lines){
+				int count = 0;
+				float lastXPixels = 0, newYPixels = 0;
+				float lastYPixels = 0, newXPixels = 0;
+				float maxY = getMaxY();
+				float minY = getMinY();
+				float maxX = getMaxX();
+				float minX = getMinX();
+				
+				paint.setColor(line.getColor());
+				paint.setStrokeWidth(6);
 				
 				for (LinePoint p : line.getPoints()){
 					float yPercent = (p.getY()-minY)/(maxY - minY);
@@ -167,126 +240,63 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 					if (count == 0){
 						lastXPixels = sidePadding + (xPercent*usableWidth);
 						lastYPixels = getHeight() - bottomPadding - (usableHeight*yPercent);
-						firstXPixels = lastXPixels;
-						path.moveTo(lastXPixels, lastYPixels);
 					} else {
 						newXPixels = sidePadding + (xPercent*usableWidth);
 						newYPixels = getHeight() - bottomPadding - (usableHeight*yPercent);
-						path.lineTo(newXPixels, newYPixels);
+						canvas.drawLine(lastXPixels, lastYPixels, newXPixels, newYPixels, paint);
 						lastXPixels = newXPixels;
 						lastYPixels = newYPixels;
 					}
 					count++;
 				}
-				path.lineTo(newXPixels, getHeight()-bottomPadding);
-				path.lineTo(getWidth(), getHeight()-bottomPadding);
-				path.lineTo(getWidth(), 0);
-				path.lineTo(0, 0);
-				path.lineTo(0, getHeight()-bottomPadding);
-				path.lineTo(firstXPixels, getHeight()-bottomPadding);
-				path.close();
-					
-				paint.setColor(Color.BLACK);
-				paint.setAlpha(30);
-				paint.setStrokeWidth(2);
-				for (int i = 10; i-getWidth() < getHeight(); i = i+20){
-					c.drawLine(i, getHeight()-bottomPadding, 0, getHeight()-bottomPadding-i, paint);
-				}
-				paint.setColor(Color.RED);
-				paint.setAlpha(255);
-				c.drawPath(path, paint);
-
-				Paint pa = new Paint();
-				pa.setColor(Color.RED); // ARGB for the color, in this case red
-				int removeColor = pa.getColor(); // store this color's int for later use
-				pa.setAlpha(0);
-				pa.setXfermode(new AvoidXfermode(removeColor, 0, AvoidXfermode.Mode.TARGET));
-				// draw transparent on the "brown" pixels
-				c.drawPaint(pa);
+			}
+			
+			
+			int pointCount = 0;
+			
+			for (Line line : lines){
+				float maxY = getMaxY();
+				float minY = getMinY();
+				float maxX = getMaxX();
+				float minX = getMinX();
 				
-				canvas.drawBitmap(b, 0, 0, null);
-			}
-			
-			lineCount++;
-		}
-		
-		paint.setColor(Color.BLACK);
-		paint.setAlpha(50);
-		paint.setAntiAlias(true);
-		canvas.drawLine(sidePadding, getHeight() - bottomPadding, getWidth()-sidePadding, getHeight()-bottomPadding, paint);
-		paint.setAlpha(255);
-		
-		
-		for (Line line : lines){
-			int count = 0;
-			float lastXPixels = 0, newYPixels = 0;
-			float lastYPixels = 0, newXPixels = 0;
-			float maxY = getMaxY();
-			float minY = getMinY();
-			float maxX = getMaxX();
-			float minX = getMinX();
-			
-			paint.setColor(line.getColor());
-			paint.setStrokeWidth(6);
-			
-			for (LinePoint p : line.getPoints()){
-				float yPercent = (p.getY()-minY)/(maxY - minY);
-				float xPercent = (p.getX()-minX)/(maxX - minX);
-				if (count == 0){
-					lastXPixels = sidePadding + (xPercent*usableWidth);
-					lastYPixels = getHeight() - bottomPadding - (usableHeight*yPercent);
-				} else {
-					newXPixels = sidePadding + (xPercent*usableWidth);
-					newYPixels = getHeight() - bottomPadding - (usableHeight*yPercent);
-					canvas.drawLine(lastXPixels, lastYPixels, newXPixels, newYPixels, paint);
-					lastXPixels = newXPixels;
-					lastYPixels = newYPixels;
-				}
-				count++;
-			}
-		}
-		
-		
-		int pointCount = 0;
-		
-		for (Line line : lines){
-			float maxY = getMaxY();
-			float minY = getMinY();
-			float maxX = getMaxX();
-			float minX = getMinX();
-			
-			paint.setColor(line.getColor());
-			paint.setStrokeWidth(6);
-			paint.setStrokeCap(Paint.Cap.ROUND);
-			
-			if (line.isShowingPoints()){
-				for (LinePoint p : line.getPoints()){
-					float yPercent = (p.getY()-minY)/(maxY - minY);
-					float xPercent = (p.getX()-minX)/(maxX - minX);
-					float xPixels = sidePadding + (xPercent*usableWidth);
-					float yPixels = getHeight() - bottomPadding - (usableHeight*yPercent);
-					
-					paint.setColor(Color.GRAY);
-					canvas.drawCircle(xPixels, yPixels, 10, paint);
-					paint.setColor(Color.WHITE);
-					canvas.drawCircle(xPixels, yPixels, 5, paint);
-					
-					Path path2 = new Path();
-					path2.addCircle(xPixels, yPixels, 30, Direction.CW);
-					p.setPath(path2);
-					p.setRegion(new Region((int)(xPixels-30), (int)(yPixels-30), (int)(xPixels+30), (int)(yPixels+30)));
-					
-					if (indexSelected == pointCount){
-						paint.setColor(Color.parseColor("#33B5E5"));
-						paint.setAlpha(100);
-						canvas.drawPath(p.getPath(), paint);
-						paint.setAlpha(255);
+				paint.setColor(line.getColor());
+				paint.setStrokeWidth(6);
+				paint.setStrokeCap(Paint.Cap.ROUND);
+				
+				if (line.isShowingPoints()){
+					for (LinePoint p : line.getPoints()){
+						float yPercent = (p.getY()-minY)/(maxY - minY);
+						float xPercent = (p.getX()-minX)/(maxX - minX);
+						float xPixels = sidePadding + (xPercent*usableWidth);
+						float yPixels = getHeight() - bottomPadding - (usableHeight*yPercent);
+						
+						paint.setColor(Color.GRAY);
+						canvas.drawCircle(xPixels, yPixels, 10, paint);
+						paint.setColor(Color.WHITE);
+						canvas.drawCircle(xPixels, yPixels, 5, paint);
+						
+						Path path2 = new Path();
+						path2.addCircle(xPixels, yPixels, 30, Direction.CW);
+						p.setPath(path2);
+						p.setRegion(new Region((int)(xPixels-30), (int)(yPixels-30), (int)(xPixels+30), (int)(yPixels+30)));
+						
+						if (indexSelected == pointCount && listener != null){
+							paint.setColor(Color.parseColor("#33B5E5"));
+							paint.setAlpha(100);
+							canvas.drawPath(p.getPath(), paint);
+							paint.setAlpha(255);
+						}
+						
+						pointCount++;
 					}
-					
-					pointCount++;
 				}
 			}
+			
+			shouldUpdate = false;
 		}
+		
+		ca.drawBitmap(fullImage, 0, 0, null);
 		
 		
 	}
@@ -323,6 +333,7 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 	    }
 	    
 	    if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_UP){
+	    	shouldUpdate = true;
 	    	postInvalidate();
 	    }
 	    

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import com.echo.holographlibrary.PieGraph.OnSliceClickedListener;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -28,6 +30,8 @@ public class BarGraph extends SurfaceView implements SurfaceHolder.Callback {
 	private boolean showBarText = true;
 	private int indexSelected = -1;
 	private OnBarClickedListener listener;
+	private Bitmap fullImage;
+	private boolean shouldUpdate = false;
 	
 	public BarGraph(Context context) {
 		super(context);
@@ -56,75 +60,83 @@ public class BarGraph extends SurfaceView implements SurfaceHolder.Callback {
 		return this.points;
 	}
 
-	public void onDraw(Canvas canvas) {
+	public void onDraw(Canvas ca) {
 		
-		canvas.drawColor(Color.TRANSPARENT);
-		NinePatchDrawable popup = (NinePatchDrawable)this.getResources().getDrawable(R.drawable.popup_nocolor);
-		
-		float maxValue = 0;
-		float padding = 7;
-		int selectPadding = 4;
-		float bottomPadding = 40;
-		
-		if (p == null) p = new Paint();
-		
-		float usableHeight;
-		if (showBarText) {
-			this.p.setTextSize(40);
-			Rect r3 = new Rect();
-			this.p.getTextBounds("$", 0, 1, r3);
-			usableHeight = getHeight()-bottomPadding-Math.abs(r3.top-r3.bottom)-26;
-		} else {
-			usableHeight = getHeight()-bottomPadding;
-		}
-		 
-		
-		p.setColor(Color.BLACK);
-		p.setStrokeWidth(2);
-		p.setAlpha(50);
-		p.setAntiAlias(true);
-		
-		canvas.drawLine(0, getHeight()-bottomPadding+10, getWidth(), getHeight()-bottomPadding+10, p);
-		
-		float barWidth = (getWidth() - (padding*2)*points.size())/points.size();
-		
-		for (Bar p : points) {
-        	maxValue += p.getValue();
-        }
-		
-		r = new Rect();
-		
-		int count = 0;
-		for (Bar p : points) {
-			r.set((int)((padding*2)*count + padding + barWidth*count), (int)(getHeight()-bottomPadding-(usableHeight*(p.getValue()/maxValue))), (int)((padding*2)*count + padding + barWidth*(count+1)), (int)(getHeight()-bottomPadding));
-        	
-			Path path = new Path();
-        	path.addRect(new RectF(r.left-selectPadding, r.top-selectPadding, r.right+selectPadding, r.bottom+selectPadding), Path.Direction.CW);
-        	p.setPath(path);
-        	p.setRegion(new Region(r.left-selectPadding, r.top-selectPadding, r.right+selectPadding, r.bottom+selectPadding));
+		if (fullImage == null || shouldUpdate) {
+			fullImage = Bitmap.createBitmap(getWidth(), getHeight(), Config.ARGB_8888);
+			Canvas canvas = new Canvas(fullImage);
+			canvas.drawColor(Color.TRANSPARENT);
+			NinePatchDrawable popup = (NinePatchDrawable)this.getResources().getDrawable(R.drawable.popup_nocolor);
 			
-        	this.p.setColor(p.getColor());
-        	this.p.setAlpha(255);
-			canvas.drawRect(r, this.p);
-			this.p.setTextSize(20);
-			canvas.drawText(p.getName(), (int)(((r.left+r.right)/2)-(this.p.measureText(p.getName())/2)), getHeight()-5, this.p);
-			if (showBarText){
+			float maxValue = 0;
+			float padding = 7;
+			int selectPadding = 4;
+			float bottomPadding = 40;
+			
+			if (p == null) p = new Paint();
+			
+			float usableHeight;
+			if (showBarText) {
 				this.p.setTextSize(40);
-				this.p.setColor(Color.WHITE);
-				Rect r2 = new Rect();
-				this.p.getTextBounds("$"+p.getValue(), 0, 1, r2);
-				popup.setBounds((int)(((r.left+r.right)/2)-(this.p.measureText("$"+p.getValue())/2))-14, r.top+(r2.top-r2.bottom)-26, (int)(((r.left+r.right)/2)+(this.p.measureText("$"+p.getValue())/2))+14, r.top);
-				popup.draw(canvas);
-				canvas.drawText("$"+p.getValue(), (int)(((r.left+r.right)/2)-(this.p.measureText("$"+p.getValue())/2)), r.top-20, this.p);
+				Rect r3 = new Rect();
+				this.p.getTextBounds("$", 0, 1, r3);
+				usableHeight = getHeight()-bottomPadding-Math.abs(r3.top-r3.bottom)-26;
+			} else {
+				usableHeight = getHeight()-bottomPadding;
 			}
-			if (indexSelected == count && listener != null) {
-				this.p.setColor(Color.parseColor("#33B5E5"));
-				this.p.setAlpha(100);
-				canvas.drawPath(p.getPath(), this.p);
-				this.p.setAlpha(255);
-			}
-        	count++;
-        }
+			 
+			
+			p.setColor(Color.BLACK);
+			p.setStrokeWidth(2);
+			p.setAlpha(50);
+			p.setAntiAlias(true);
+			
+			canvas.drawLine(0, getHeight()-bottomPadding+10, getWidth(), getHeight()-bottomPadding+10, p);
+			
+			float barWidth = (getWidth() - (padding*2)*points.size())/points.size();
+			
+			for (Bar p : points) {
+	        	maxValue += p.getValue();
+	        }
+			
+			r = new Rect();
+			
+			int count = 0;
+			for (Bar p : points) {
+				r.set((int)((padding*2)*count + padding + barWidth*count), (int)(getHeight()-bottomPadding-(usableHeight*(p.getValue()/maxValue))), (int)((padding*2)*count + padding + barWidth*(count+1)), (int)(getHeight()-bottomPadding));
+	        	
+				Path path = new Path();
+	        	path.addRect(new RectF(r.left-selectPadding, r.top-selectPadding, r.right+selectPadding, r.bottom+selectPadding), Path.Direction.CW);
+	        	p.setPath(path);
+	        	p.setRegion(new Region(r.left-selectPadding, r.top-selectPadding, r.right+selectPadding, r.bottom+selectPadding));
+				
+	        	this.p.setColor(p.getColor());
+	        	this.p.setAlpha(255);
+				canvas.drawRect(r, this.p);
+				this.p.setTextSize(20);
+				canvas.drawText(p.getName(), (int)(((r.left+r.right)/2)-(this.p.measureText(p.getName())/2)), getHeight()-5, this.p);
+				if (showBarText){
+					this.p.setTextSize(40);
+					this.p.setColor(Color.WHITE);
+					Rect r2 = new Rect();
+					this.p.getTextBounds("$"+p.getValue(), 0, 1, r2);
+					popup.setBounds((int)(((r.left+r.right)/2)-(this.p.measureText("$"+p.getValue())/2))-14, r.top+(r2.top-r2.bottom)-26, (int)(((r.left+r.right)/2)+(this.p.measureText("$"+p.getValue())/2))+14, r.top);
+					popup.draw(canvas);
+					canvas.drawText("$"+p.getValue(), (int)(((r.left+r.right)/2)-(this.p.measureText("$"+p.getValue())/2)), r.top-20, this.p);
+				}
+				if (indexSelected == count && listener != null) {
+					this.p.setColor(Color.parseColor("#33B5E5"));
+					this.p.setAlpha(100);
+					canvas.drawPath(p.getPath(), this.p);
+					this.p.setAlpha(255);
+				}
+	        	count++;
+	        }
+			shouldUpdate = false;
+		}
+		
+		ca.drawBitmap(fullImage, 0, 0, null);
+		
 	}
 
 	@Override
@@ -150,6 +162,7 @@ public class BarGraph extends SurfaceView implements SurfaceHolder.Callback {
 	    }
 	    
 	    if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_UP){
+	    	shouldUpdate = true;
 	    	postInvalidate();
 	    }
 	    
