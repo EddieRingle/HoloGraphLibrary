@@ -66,7 +66,7 @@ public class BarGraph extends SurfaceView implements SurfaceHolder.Callback {
 			fullImage = Bitmap.createBitmap(getWidth(), getHeight(), Config.ARGB_8888);
 			Canvas canvas = new Canvas(fullImage);
 			canvas.drawColor(Color.TRANSPARENT);
-			NinePatchDrawable popup = (NinePatchDrawable)this.getResources().getDrawable(R.drawable.popup_nocolor);
+			NinePatchDrawable popup = (NinePatchDrawable)this.getResources().getDrawable(R.drawable.popup_black);
 			
 			float maxValue = 0;
 			float padding = 7;

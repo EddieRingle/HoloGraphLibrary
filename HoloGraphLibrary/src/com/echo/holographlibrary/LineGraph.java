@@ -16,6 +16,7 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Path.Direction;
 import android.graphics.PixelFormat;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Region;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -47,7 +48,9 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 	    getHolder().setFormat(PixelFormat.TRANSPARENT); 
 	    getHolder().addCallback(this); 
 	}
-	
+	public void setMinY(float minY){
+		
+	}
 	public void addLine(Line line) {
 		lines.add(line);
 	}
@@ -146,7 +149,7 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 			Canvas canvas = new Canvas(fullImage);
 			Paint paint = new Paint();
 			Path path = new Path();
-			float bottomPadding = 2, topPadding = 10;
+			float bottomPadding = 10, topPadding = 10;
 			float sidePadding = 10;
 			float usableHeight = getHeight() - bottomPadding - topPadding;
 			float usableWidth = getWidth() - 2*sidePadding;
@@ -162,10 +165,15 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 				float minX = getMinX();
 				
 				if (lineCount == lineToFill){
+					paint.setColor(Color.BLACK);
+					paint.setAlpha(30);
+					paint.setStrokeWidth(2);
+					for (int i = 10; i-getWidth() < getHeight(); i = i+20){
+						canvas.drawLine(i, getHeight()-bottomPadding, 0, getHeight()-bottomPadding-i, paint);
+					}
 					
-					Bitmap b = Bitmap.createBitmap(getWidth(), getHeight(), Config.ARGB_8888);
-					Canvas c = new Canvas(b);
-					
+					paint = new Paint();
+					paint.setXfermode(new PorterDuffXfermode(android.graphics.PorterDuff.Mode.CLEAR));
 					for (LinePoint p : line.getPoints()){
 						float yPercent = (p.getY()-minY)/(maxY - minY);
 						float xPercent = (p.getX()-minX)/(maxX - minX);
@@ -178,42 +186,41 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 							newXPixels = sidePadding + (xPercent*usableWidth);
 							newYPixels = getHeight() - bottomPadding - (usableHeight*yPercent);
 							path.lineTo(newXPixels, newYPixels);
+							Path pa = new Path();
+							pa.moveTo(lastXPixels, lastYPixels);
+							pa.lineTo(newXPixels, newYPixels);
+							pa.lineTo(newXPixels, 0);
+							pa.lineTo(lastXPixels, 0);
+							pa.close();
+							canvas.drawPath(pa, paint);
 							lastXPixels = newXPixels;
 							lastYPixels = newYPixels;
 						}
 						count++;
 					}
-					path.lineTo(newXPixels, getHeight()-bottomPadding);
-					path.lineTo(getWidth(), getHeight()-bottomPadding);
-					path.lineTo(getWidth(), 0);
-					path.lineTo(0, 0);
-					path.lineTo(0, getHeight()-bottomPadding);
-					path.lineTo(firstXPixels, getHeight()-bottomPadding);
-					path.close();
-						
-					paint.setColor(Color.BLACK);
-					paint.setAlpha(30);
-					paint.setStrokeWidth(2);
-					for (int i = 10; i-getWidth() < getHeight(); i = i+20){
-						c.drawLine(i, getHeight()-bottomPadding, 0, getHeight()-bottomPadding-i, paint);
-					}
-					paint.setColor(Color.RED);
-					paint.setAlpha(255);
-					c.drawPath(path, paint);
-	
-					Paint pa = new Paint();
-					pa.setColor(Color.RED); // ARGB for the color, in this case red
-					int removeColor = pa.getColor(); // store this color's int for later use
-					pa.setAlpha(0);
-					pa.setXfermode(new AvoidXfermode(removeColor, 0, AvoidXfermode.Mode.TARGET));
-					// draw transparent on the "brown" pixels
-					c.drawPaint(pa);
 					
-					canvas.drawBitmap(b, 0, 0, null);
+					Path pa = new Path();
+					pa.moveTo(0, getHeight()-bottomPadding);
+					pa.lineTo(sidePadding, getHeight()-bottomPadding);
+					pa.lineTo(sidePadding, 0);
+					pa.lineTo(0, 0);
+					pa.close();
+					canvas.drawPath(pa, paint);
+					
+					pa = new Path();
+					pa.moveTo(getWidth(), getHeight()-bottomPadding);
+					pa.lineTo(getWidth()-sidePadding, getHeight()-bottomPadding);
+					pa.lineTo(getWidth()-sidePadding, 0);
+					pa.lineTo(getWidth(), 0);
+					pa.close();
+					canvas.drawPath(pa, paint);
+					
 				}
 				
 				lineCount++;
 			}
+			
+			paint = new Paint();
 			
 			paint.setColor(Color.BLACK);
 			paint.setAlpha(50);

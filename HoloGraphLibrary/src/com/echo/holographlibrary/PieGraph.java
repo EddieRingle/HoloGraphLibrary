@@ -7,11 +7,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Path.Direction;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -81,9 +83,15 @@ public class PieGraph extends SurfaceView implements SurfaceHolder.Callback {
 				paint.setColor(slice.getColor());
 				paint.setColor(Color.parseColor("#33B5E5"));
 				paint.setAlpha(100);
-				p2.arcTo(new RectF(midX-radius-(padding*2), midY-radius-(padding*2), midX+radius+(padding*2), midY+radius+(padding*2)), currentAngle, currentSweep+padding);
-				p2.arcTo(new RectF(midX-innerRadius+(padding*2), midY-innerRadius+(padding*2), midX+innerRadius-(padding*2), midY+innerRadius-(padding*2)), currentAngle + currentSweep + padding, -(currentSweep + padding));
-				p2.close();
+				
+				if (slices.size() > 1) {
+					p2.arcTo(new RectF(midX-radius-(padding*2), midY-radius-(padding*2), midX+radius+(padding*2), midY+radius+(padding*2)), currentAngle, currentSweep+padding);
+					p2.arcTo(new RectF(midX-innerRadius+(padding*2), midY-innerRadius+(padding*2), midX+innerRadius-(padding*2), midY+innerRadius-(padding*2)), currentAngle + currentSweep + padding, -(currentSweep + padding));
+					p2.close();
+				} else {
+					p2.addCircle(midX, midY, radius+padding, Direction.CW);
+				}
+				
 				canvas.drawPath(p2, paint);
 				paint.setAlpha(255);
 			}
@@ -111,9 +119,12 @@ public class PieGraph extends SurfaceView implements SurfaceHolder.Callback {
 	    		indexSelected = count;
 	    	} else if (event.getAction() == MotionEvent.ACTION_UP){
 	    		if (r.contains((int)point.x,(int) point.y) && listener != null){
-	    			listener.onClick(indexSelected);
+	    			if (indexSelected > -1){
+		    			listener.onClick(indexSelected);
+	    			}
+	    			indexSelected = -1;
 	    		}
-	    		indexSelected = -1;
+	    		
 	    	}
 		    count++;
 	    }
@@ -145,12 +156,14 @@ public class PieGraph extends SurfaceView implements SurfaceHolder.Callback {
 	}
 	public void setSlices(ArrayList<PieSlice> slices) {
 		this.slices = slices;
+		postInvalidate();
 	}
 	public PieSlice getSlice(int index) {
 		return slices.get(index);
 	}
 	public void addSlice(PieSlice slice) {
 		this.slices.add(slice);
+		postInvalidate();
 	}
 	public void setOnSliceClickedListener(OnSliceClickedListener listener) {
 		this.listener = listener;
@@ -161,10 +174,18 @@ public class PieGraph extends SurfaceView implements SurfaceHolder.Callback {
 	}
 	public void setThickness(int thickness) {
 		this.thickness = thickness;
+		postInvalidate();
+	}
+	
+	public void removeSlices(){
+		for (int i = slices.size()-1; i >= 0; i--){
+			slices.remove(i);
+		}
+		postInvalidate();
 	}
 
-	public abstract class OnSliceClickedListener {
-		abstract void onClick(int index);
+	public static abstract class OnSliceClickedListener {
+		public abstract void onClick(int index);
 	}
 
 }
