@@ -323,15 +323,19 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 	    for (Line line : lines){
 	    	pointCount = 0;
 	    	for (LinePoint p : line.getPoints()){
-		    	r.setPath(p.getPath(), p.getRegion());
-		    	if (r.contains((int)point.x,(int) point.y) && event.getAction() == MotionEvent.ACTION_DOWN){
-		    		indexSelected = count;
-		    	} else if (event.getAction() == MotionEvent.ACTION_UP){
-		    		if (r.contains((int)point.x,(int) point.y) && listener != null){
-		    			listener.onClick(lineCount, pointCount);
-		    		}
-		    		indexSelected = -1;
-		    	}
+	    		
+	    		if (p.getPath() != null && p.getRegion() != null){
+	    			r.setPath(p.getPath(), p.getRegion());
+			    	if (r.contains((int)point.x,(int) point.y) && event.getAction() == MotionEvent.ACTION_DOWN){
+			    		indexSelected = count;
+			    	} else if (event.getAction() == MotionEvent.ACTION_UP){
+			    		if (r.contains((int)point.x,(int) point.y) && listener != null){
+			    			listener.onClick(lineCount, pointCount);
+			    		}
+			    		indexSelected = -1;
+			    	}
+	    		}
+		    	
 		    	pointCount++;
 			    count++;
 	    	}
