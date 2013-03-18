@@ -51,14 +51,27 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 	public void setMinY(float minY){
 		
 	}
+	
+	public void removeAllLines(){
+		while (lines.size() > 0){
+			lines.remove(0);
+		}
+		shouldUpdate = true;
+		postInvalidate();
+	}
+	
 	public void addLine(Line line) {
 		lines.add(line);
+		shouldUpdate = true;
+		postInvalidate();
 	}
 	public ArrayList<Line> getLines() {
 		return lines;
 	}
 	public void setLineToFill(int indexOfLine) {
 		this.lineToFill = indexOfLine;
+		shouldUpdate = true;
+		postInvalidate();
 	}
 	public int getLineToFill(){
 		return lineToFill;
