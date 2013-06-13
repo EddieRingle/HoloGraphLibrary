@@ -45,6 +45,9 @@ import android.view.View;
 public class PieGraph extends View {
 
 	private ArrayList<PieSlice> slices = new ArrayList<PieSlice>();
+	private Paint paint = new Paint();
+	private Path path = new Path();
+	
 	private int indexSelected = -1;
 	private int thickness = 50;
 	private OnSliceClickedListener listener;
@@ -59,10 +62,10 @@ public class PieGraph extends View {
 	
 	public void onDraw(Canvas canvas) {
 		canvas.drawColor(Color.TRANSPARENT);
-		Paint paint = new Paint();
+		paint.reset();
 		paint.setAntiAlias(true);
 		float midX, midY, radius, innerRadius;
-		Path p = new Path();
+		path.reset();
 		
 		float currentAngle = 270;
 		float currentSweep = 0;
@@ -85,7 +88,7 @@ public class PieGraph extends View {
 		
 		int count = 0;
 		for (PieSlice slice : slices){
-			p = new Path();
+			Path p = new Path();
 			paint.setColor(slice.getColor());
 			currentSweep = (slice.getValue()/totalValue)*(360);
 			p.arcTo(new RectF(midX-radius, midY-radius, midX+radius, midY+radius), currentAngle+padding, currentSweep - padding);
@@ -97,20 +100,20 @@ public class PieGraph extends View {
 			canvas.drawPath(p, paint);
 			
 			if (indexSelected == count && listener != null){
-				Path p2 = new Path();
+				path.reset();
 				paint.setColor(slice.getColor());
 				paint.setColor(Color.parseColor("#33B5E5"));
 				paint.setAlpha(100);
 				
 				if (slices.size() > 1) {
-					p2.arcTo(new RectF(midX-radius-(padding*2), midY-radius-(padding*2), midX+radius+(padding*2), midY+radius+(padding*2)), currentAngle, currentSweep+padding);
-					p2.arcTo(new RectF(midX-innerRadius+(padding*2), midY-innerRadius+(padding*2), midX+innerRadius-(padding*2), midY+innerRadius-(padding*2)), currentAngle + currentSweep + padding, -(currentSweep + padding));
-					p2.close();
+					path.arcTo(new RectF(midX-radius-(padding*2), midY-radius-(padding*2), midX+radius+(padding*2), midY+radius+(padding*2)), currentAngle, currentSweep+padding);
+					path.arcTo(new RectF(midX-innerRadius+(padding*2), midY-innerRadius+(padding*2), midX+innerRadius-(padding*2), midY+innerRadius-(padding*2)), currentAngle + currentSweep + padding, -(currentSweep + padding));
+					path.close();
 				} else {
-					p2.addCircle(midX, midY, radius+padding, Direction.CW);
+					path.addCircle(midX, midY, radius+padding, Direction.CW);
 				}
 				
-				canvas.drawPath(p2, paint);
+				canvas.drawPath(path, paint);
 				paint.setAlpha(255);
 			}
 			

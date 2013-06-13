@@ -49,7 +49,8 @@ import android.view.View;
 public class BarGraph extends View {
 
 	private ArrayList<Bar> points = new ArrayList<Bar>();
-	private Paint p;
+	private Paint p = new Paint();
+	private Path path = new Path();
 	private Rect r;
 	private boolean showBarText = true;
 	private int indexSelected = -1;
@@ -91,8 +92,6 @@ public class BarGraph extends View {
 			int selectPadding = 4;
 			float bottomPadding = 40;
 			
-			if (p == null) p = new Paint();
-			
 			float usableHeight;
 			if (showBarText) {
 				this.p.setTextSize(40);
@@ -119,11 +118,12 @@ public class BarGraph extends View {
 			
 			r = new Rect();
 			
+			path.reset();
+			
 			int count = 0;
 			for (Bar p : points) {
 				r.set((int)((padding*2)*count + padding + barWidth*count), (int)(getHeight()-bottomPadding-(usableHeight*(p.getValue()/maxValue))), (int)((padding*2)*count + padding + barWidth*(count+1)), (int)(getHeight()-bottomPadding));
 	        	
-				Path path = new Path();
 	        	path.addRect(new RectF(r.left-selectPadding, r.top-selectPadding, r.right+selectPadding, r.bottom+selectPadding), Path.Direction.CW);
 	        	p.setPath(path);
 	        	p.setRegion(new Region(r.left-selectPadding, r.top-selectPadding, r.right+selectPadding, r.bottom+selectPadding));

@@ -50,6 +50,7 @@ import android.view.View;
 public class LineGraph extends View {
 	
 	private ArrayList<Line> lines = new ArrayList<Line>();
+	Paint paint = new Paint();
 	private float minY = 0, minX = 0;
 	private float maxY = 0, maxX = 0;
 	private boolean isMaxYUserSet = false;
@@ -165,8 +166,10 @@ public class LineGraph extends View {
 		if (fullImage == null || shouldUpdate) {
 			fullImage = Bitmap.createBitmap(getWidth(), getHeight(), Config.ARGB_8888);
 			Canvas canvas = new Canvas(fullImage);
-			Paint paint = new Paint();
+			
+			paint.reset();
 			Path path = new Path();
+			
 			float bottomPadding = 10, topPadding = 10;
 			float sidePadding = 10;
 			float usableHeight = getHeight() - bottomPadding - topPadding;
@@ -190,7 +193,8 @@ public class LineGraph extends View {
 						canvas.drawLine(i, getHeight()-bottomPadding, 0, getHeight()-bottomPadding-i, paint);
 					}
 					
-					paint = new Paint();
+					paint.reset();
+					
 					paint.setXfermode(new PorterDuffXfermode(android.graphics.PorterDuff.Mode.CLEAR));
 					for (LinePoint p : line.getPoints()){
 						float yPercent = (p.getY()-minY)/(maxY - minY);
@@ -217,28 +221,31 @@ public class LineGraph extends View {
 						count++;
 					}
 					
-					Path pa = new Path();
-					pa.moveTo(0, getHeight()-bottomPadding);
-					pa.lineTo(sidePadding, getHeight()-bottomPadding);
-					pa.lineTo(sidePadding, 0);
-					pa.lineTo(0, 0);
-					pa.close();
-					canvas.drawPath(pa, paint);
+					path.reset();
 					
-					pa = new Path();
-					pa.moveTo(getWidth(), getHeight()-bottomPadding);
-					pa.lineTo(getWidth()-sidePadding, getHeight()-bottomPadding);
-					pa.lineTo(getWidth()-sidePadding, 0);
-					pa.lineTo(getWidth(), 0);
-					pa.close();
-					canvas.drawPath(pa, paint);
+					path.moveTo(0, getHeight()-bottomPadding);
+					path.lineTo(sidePadding, getHeight()-bottomPadding);
+					path.lineTo(sidePadding, 0);
+					path.lineTo(0, 0);
+					path.close();
+					canvas.drawPath(path, paint);
+					
+					path.reset();
+					
+					path.moveTo(getWidth(), getHeight()-bottomPadding);
+					path.lineTo(getWidth()-sidePadding, getHeight()-bottomPadding);
+					path.lineTo(getWidth()-sidePadding, 0);
+					path.lineTo(getWidth(), 0);
+					path.close();
+					
+					canvas.drawPath(path, paint);
 					
 				}
 				
 				lineCount++;
 			}
 			
-			paint = new Paint();
+			paint.reset();
 			
 			paint.setColor(Color.BLACK);
 			paint.setAlpha(50);
