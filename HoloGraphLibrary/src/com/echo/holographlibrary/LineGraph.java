@@ -45,8 +45,9 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 
-public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
+public class LineGraph extends View {
 	
 	private ArrayList<Line> lines = new ArrayList<Line>();
 	private float minY = 0, minX = 0;
@@ -60,16 +61,10 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 	
 	public LineGraph(Context context){
 		super(context);
-		this.setZOrderOnTop(true); //necessary                
-	    getHolder().setFormat(PixelFormat.TRANSPARENT); 
-	    getHolder().addCallback(this); 
 	}
 	
 	public LineGraph(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		this.setZOrderOnTop(true); //necessary                
-	    getHolder().setFormat(PixelFormat.TRANSPARENT); 
-	    getHolder().addCallback(this); 
 	}
 	public void setMinY(float minY){
 		
@@ -165,19 +160,6 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 		maxX = max;
 		return maxX;
 	}
-
-	@Override
-	public void surfaceChanged(SurfaceHolder holder, int format, int width,
-			int height) {}
-
-	@Override
-	public void surfaceCreated(SurfaceHolder holder) {
-		setWillNotDraw(false); 					//Allows us to use invalidate() to call onDraw()
-		postInvalidate();
-	}
-
-	@Override
-	public void surfaceDestroyed(SurfaceHolder holder) {}
 	
 	public void onDraw(Canvas ca) {
 		if (fullImage == null || shouldUpdate) {
@@ -393,7 +375,7 @@ public class LineGraph extends SurfaceView implements SurfaceHolder.Callback {
 		this.listener = listener;
 	}
 	
-	public abstract class OnPointClickedListener {
+	public interface OnPointClickedListener {
 		abstract void onClick(int lineIndex, int pointIndex);
 	}
 }

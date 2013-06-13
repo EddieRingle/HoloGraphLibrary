@@ -44,8 +44,9 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 
-public class BarGraph extends SurfaceView implements SurfaceHolder.Callback {
+public class BarGraph extends View {
 
 	private ArrayList<Bar> points = new ArrayList<Bar>();
 	private Paint p;
@@ -58,16 +59,10 @@ public class BarGraph extends SurfaceView implements SurfaceHolder.Callback {
 	
 	public BarGraph(Context context) {
 		super(context);
-	    this.setZOrderOnTop(true); //necessary                
-	    getHolder().setFormat(PixelFormat.TRANSPARENT); 
-	    getHolder().addCallback(this); 
 	}
 	
 	public BarGraph(Context context, AttributeSet attrs) {
 		super(context, attrs);
-	    this.setZOrderOnTop(true); //necessary                
-	    getHolder().setFormat(PixelFormat.TRANSPARENT); 
-	    getHolder().addCallback(this); 
 	}
 	
 	public void setShowBarText(boolean show){
@@ -194,24 +189,11 @@ public class BarGraph extends SurfaceView implements SurfaceHolder.Callback {
 	    return true;
 	}
 	
-	@Override
-	public void surfaceChanged(SurfaceHolder holder, int format, int width,
-			int height) {}
-
-	@Override
-	public void surfaceCreated(SurfaceHolder holder) {
-		setWillNotDraw(false); 					//Allows us to use invalidate() to call onDraw()
-		postInvalidate();
-	}
-
-	@Override
-	public void surfaceDestroyed(SurfaceHolder holder) {}
-	
 	public void setOnBarClickedListener(OnBarClickedListener listener) {
 		this.listener = listener;
 	}
 	
-	public abstract class OnBarClickedListener {
+	public interface OnBarClickedListener {
 		abstract void onClick(int index);
 	}
 }

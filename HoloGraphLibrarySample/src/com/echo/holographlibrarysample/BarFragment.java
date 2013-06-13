@@ -34,6 +34,7 @@ import android.view.ViewGroup;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.echo.holographlibrary.Bar;
 import com.echo.holographlibrary.BarGraph;
+import com.echo.holographlibrary.BarGraph.OnBarClickedListener;
 
 public class BarFragment extends SherlockFragment {
 	
@@ -54,6 +55,15 @@ public class BarFragment extends SherlockFragment {
 		
 		BarGraph g = (BarGraph)v.findViewById(R.id.bargraph);
 		g.setBars(points);
+		
+		g.setOnBarClickedListener(new OnBarClickedListener(){
+
+			@Override
+			public void onClick(int index) {
+				
+			}
+			
+		});
 		
 		return v;
 	}

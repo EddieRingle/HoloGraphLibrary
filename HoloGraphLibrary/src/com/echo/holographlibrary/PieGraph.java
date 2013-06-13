@@ -40,8 +40,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 
-public class PieGraph extends SurfaceView implements SurfaceHolder.Callback {
+public class PieGraph extends View {
 
 	private ArrayList<PieSlice> slices = new ArrayList<PieSlice>();
 	private int indexSelected = -1;
@@ -51,15 +52,9 @@ public class PieGraph extends SurfaceView implements SurfaceHolder.Callback {
 	
 	public PieGraph(Context context) {
 		super(context);
-		this.setZOrderOnTop(true); //necessary                
-	    getHolder().setFormat(PixelFormat.TRANSPARENT); 
-	    getHolder().addCallback(this); 
 	}
 	public PieGraph(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		this.setZOrderOnTop(true); //necessary                
-	    getHolder().setFormat(PixelFormat.TRANSPARENT); 
-	    getHolder().addCallback(this); 
 	}
 	
 	public void onDraw(Canvas canvas) {
@@ -161,19 +156,6 @@ public class PieGraph extends SurfaceView implements SurfaceHolder.Callback {
 	    return true;
 	}
 	
-	@Override
-	public void surfaceChanged(SurfaceHolder holder, int format, int width,
-			int height) {}
-
-	@Override
-	public void surfaceCreated(SurfaceHolder holder) {
-		setWillNotDraw(false); 					//Allows us to use invalidate() to call onDraw()
-		postInvalidate();
-	}
-
-	@Override
-	public void surfaceDestroyed(SurfaceHolder holder) {}
-	
 	public ArrayList<PieSlice> getSlices() {
 		return slices;
 	}
@@ -207,7 +189,7 @@ public class PieGraph extends SurfaceView implements SurfaceHolder.Callback {
 		postInvalidate();
 	}
 
-	public static abstract class OnSliceClickedListener {
+	public static interface OnSliceClickedListener {
 		public abstract void onClick(int index);
 	}
 

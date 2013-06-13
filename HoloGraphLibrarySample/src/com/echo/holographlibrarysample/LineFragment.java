@@ -34,6 +34,7 @@ import android.view.ViewGroup;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.echo.holographlibrary.Line;
 import com.echo.holographlibrary.LineGraph;
+import com.echo.holographlibrary.LineGraph.OnPointClickedListener;
 import com.echo.holographlibrary.LinePoint;
 
 public class LineFragment extends SherlockFragment {
@@ -61,6 +62,15 @@ public class LineFragment extends SherlockFragment {
 		li.setRangeY(0, 10);
 		li.setLineToFill(0);
 		
+		li.setOnPointClickedListener(new OnPointClickedListener(){
+
+			@Override
+			public void onClick(int lineIndex, int pointIndex) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
 		
 		return v;
 	}

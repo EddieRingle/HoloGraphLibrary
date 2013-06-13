@@ -31,6 +31,7 @@ import android.view.ViewGroup;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.echo.holographlibrary.PieGraph;
+import com.echo.holographlibrary.PieGraph.OnSliceClickedListener;
 import com.echo.holographlibrary.PieSlice;
 
 public class PieFragment extends SherlockFragment {
@@ -51,6 +52,15 @@ public class PieFragment extends SherlockFragment {
 		slice.setColor(Color.parseColor("#AA66CC"));
 		slice.setValue(8);
 		pg.addSlice(slice);		
+		
+		pg.setOnSliceClickedListener(new OnSliceClickedListener(){
+
+			@Override
+			public void onClick(int index) {
+				
+			}
+			
+		});
 		
 		return v;
 	}
