@@ -50,7 +50,6 @@ public class BarGraph extends View {
 
 	private ArrayList<Bar> points = new ArrayList<Bar>();
 	private Paint p = new Paint();
-	private Path path = new Path();
 	private Rect r;
 	private boolean showBarText = true;
 	private int indexSelected = -1;
@@ -118,18 +117,17 @@ public class BarGraph extends View {
 			
 			r = new Rect();
 			
-			path.reset();
-			
 			int count = 0;
 			for (Bar p : points) {
 				r.set((int)((padding*2)*count + padding + barWidth*count), (int)(getHeight()-bottomPadding-(usableHeight*(p.getValue()/maxValue))), (int)((padding*2)*count + padding + barWidth*(count+1)), (int)(getHeight()-bottomPadding));
 	        	
-	        	path.addRect(new RectF(r.left-selectPadding, r.top-selectPadding, r.right+selectPadding, r.bottom+selectPadding), Path.Direction.CW);
-	        	p.setPath(path);
-	        	p.setRegion(new Region(r.left-selectPadding, r.top-selectPadding, r.right+selectPadding, r.bottom+selectPadding));
+				Path path = new Path();
+				path.addRect(new RectF(r.left-selectPadding, r.top-selectPadding, r.right+selectPadding, r.bottom+selectPadding), Path.Direction.CW);
+				p.setPath(path);
+				p.setRegion(new Region(r.left-selectPadding, r.top-selectPadding, r.right+selectPadding, r.bottom+selectPadding));
 				
-	        	this.p.setColor(p.getColor());
-	        	this.p.setAlpha(255);
+				this.p.setColor(p.getColor());
+				this.p.setAlpha(255);
 				canvas.drawRect(r, this.p);
 				this.p.setTextSize(20);
 				canvas.drawText(p.getName(), (int)(((r.left+r.right)/2)-(this.p.measureText(p.getName())/2)), getHeight()-5, this.p);
