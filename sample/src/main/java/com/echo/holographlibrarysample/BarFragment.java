@@ -23,37 +23,40 @@
 
 package com.echo.holographlibrarysample;
 
+import java.util.ArrayList;
+
+import android.app.Fragment;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.actionbarsherlock.app.SherlockFragment;
-import com.echo.holographlibrary.PieGraph;
-import com.echo.holographlibrary.PieGraph.OnSliceClickedListener;
-import com.echo.holographlibrary.PieSlice;
+import com.echo.holographlibrary.Bar;
+import com.echo.holographlibrary.BarGraph;
+import com.echo.holographlibrary.BarGraph.OnBarClickedListener;
 
-public class PieFragment extends SherlockFragment {
-
+public class BarFragment extends Fragment {
+	
 	@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		final View v = inflater.inflate(R.layout.fragment_piegraph, container, false);
-		PieGraph pg = (PieGraph)v.findViewById(R.id.piegraph);
-		PieSlice slice = new PieSlice();
-		slice.setColor(Color.parseColor("#99CC00"));
-		slice.setValue(2);
-		pg.addSlice(slice);
-		slice = new PieSlice();
-		slice.setColor(Color.parseColor("#FFBB33"));
-		slice.setValue(3);
-		pg.addSlice(slice);
-		slice = new PieSlice();
-		slice.setColor(Color.parseColor("#AA66CC"));
-		slice.setValue(8);
-		pg.addSlice(slice);		
+		final View v = inflater.inflate(R.layout.fragment_bargraph, container, false);
+		ArrayList<Bar> points = new ArrayList<Bar>();
+		Bar d = new Bar();
+		d.setColor(Color.parseColor("#99CC00"));
+		d.setName("Test1");
+		d.setValue(10);
+		Bar d2 = new Bar();
+		d2.setColor(Color.parseColor("#FFBB33"));
+		d2.setName("Test2");
+		d2.setValue(20);
+		points.add(d);
+		points.add(d2);
 		
-		pg.setOnSliceClickedListener(new OnSliceClickedListener(){
+		BarGraph g = (BarGraph)v.findViewById(R.id.bargraph);
+		g.setBars(points);
+		
+		g.setOnBarClickedListener(new OnBarClickedListener(){
 
 			@Override
 			public void onClick(int index) {
